@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PowerDonor.ai</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Segoe UI',sans-serif; background:#0f0f1a; color:#fff; }
+
+  .slide { width:1280px; min-height:720px; margin:0 auto; display:none; flex-direction:column; }
+  .slide.active { display:flex; }
+  .inner { width:1280px; min-height:720px; padding:50px 80px; display:flex; flex-direction:column; justify-content:center; }
+
+  .nav { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); display:flex; gap:12px; z-index:100; background:rgba(255,255,255,0.08); padding:8px 20px; border-radius:50px; backdrop-filter:blur(10px); }
+  .nav button { background:rgba(255,255,255,0.15); border:none; color:#fff; padding:7px 18px; border-radius:20px; cursor:pointer; font-size:14px; }
+  .nav button:hover { background:rgba(255,255,255,0.3); }
+  .nav span { color:rgba(255,255,255,0.6); line-height:32px; font-size:14px; }
+
+  .tag { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:10px; }
+  .title { font-size:38px; font-weight:800; margin-bottom:8px; }
+  .sub { font-size:17px; color:rgba(255,255,255,0.5); margin-bottom:32px; }
+  .accent { color:#6C63FF; }
+  .green { color:#00D4AA; }
+  .red { color:#FF6B6B; }
+  .yellow { color:#ffd060; }
+
+  /* SLIDE 1 - Title */
+  .s1 { background:linear-gradient(135deg,#0f0f1a,#1a1a3e); position:relative; overflow:hidden; }
+  .s1 .blob { position:absolute; border-radius:50%; opacity:.07; }
+  .s1 .b1 { width:580px; height:580px; background:#6C63FF; right:-120px; top:-120px; }
+  .s1 .b2 { width:280px; height:280px; background:#00D4AA; right:220px; bottom:-80px; }
+  .s1 .logo { font-size:54px; font-weight:800; margin-bottom:14px; }
+  .s1 .tagline { font-size:22px; color:rgba(255,255,255,0.6); margin-bottom:48px; }
+  .s1 .bar { width:60px; height:4px; background:#6C63FF; border-radius:2px; margin-bottom:36px; }
+
+  /* SLIDE 2 - The Data Problem */
+  .s2 { background:linear-gradient(135deg,#0f0f1a,#1a0a0a); }
+  .data-grid { display:grid; grid-template-columns:1fr 50px 1fr; align-items:center; gap:0; margin-top:8px; }
+  .dbox { border-radius:16px; padding:26px 28px; border:1px solid rgba(255,255,255,0.1); }
+  .dbox.bad { border-color:rgba(255,107,107,0.35); background:rgba(255,107,107,0.06); }
+  .dbox.good { border-color:rgba(0,212,170,0.35); background:rgba(0,212,170,0.06); }
+  .dbox h3 { font-size:15px; font-weight:700; margin-bottom:16px; }
+  .df { margin-bottom:10px; }
+  .df .lbl { font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:rgba(255,255,255,0.4); margin-bottom:3px; }
+  .df .val { font-size:14px; }
+  .df .empty { color:rgba(255,107,107,0.7); font-style:italic; }
+  .df .full { color:rgba(0,212,170,0.9); }
+  .darr { text-align:center; font-size:30px; color:#6C63FF; }
+  .warning-box { margin-top:22px; background:rgba(255,107,107,0.08); border:1px solid rgba(255,107,107,0.3); border-radius:12px; padding:16px 24px; display:flex; align-items:center; gap:14px; }
+  .warning-box .wi { font-size:28px; }
+  .warning-box p { font-size:15px; color:rgba(255,255,255,0.8); line-height:1.6; }
+  .warning-box strong { color:#FF6B6B; }
+
+  /* SLIDE 3 - Why Data is Everything */
+  .s3 { background:linear-gradient(135deg,#0f0f1a,#1a0a0a); }
+  .big-statement { font-size:28px; font-weight:800; line-height:1.4; margin-bottom:36px; color:rgba(255,255,255,0.9); }
+  .big-statement span { color:#FF6B6B; }
+  .three-facts { display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; }
+  .fact { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:28px 24px; }
+  .fact .num { font-size:42px; font-weight:800; margin-bottom:8px; }
+  .fact h4 { font-size:16px; font-weight:700; margin-bottom:8px; }
+  .fact p { font-size:14px; color:rgba(255,255,255,0.55); line-height:1.6; }
+  .fact.f1 .num { color:#FF6B6B; }
+  .fact.f2 .num { color:#ffd060; }
+  .fact.f3 .num { color:#00D4AA; }
+  .bottom-note { margin-top:24px; text-align:center; font-size:16px; color:rgba(255,255,255,0.6); background:rgba(255,255,255,0.04); padding:16px; border-radius:10px; border-left:3px solid #6C63FF; text-align:left; padding-left:24px; }
+
+  /* SLIDE 4 - Latency Problem */
+  .s4 { background:linear-gradient(135deg,#0f0f1a,#1a1a0a); }
+  .latency-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top:8px; }
+  .lat-problem { background:rgba(255,107,107,0.06); border:1px solid rgba(255,107,107,0.3); border-radius:16px; padding:28px; }
+  .lat-solution { background:rgba(0,212,170,0.06); border:1px solid rgba(0,212,170,0.3); border-radius:16px; padding:28px; }
+  .lat-problem h3 { color:#FF6B6B; font-size:17px; margin-bottom:20px; }
+  .lat-solution h3 { color:#00D4AA; font-size:17px; margin-bottom:20px; }
+  .lat-item { padding:12px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:14px; color:rgba(255,255,255,0.75); line-height:1.6; }
+  .lat-item:last-child { border-bottom:none; }
+  .lat-item strong { display:block; font-size:13px; margin-bottom:4px; color:#fff; }
+  .flow-steps { display:flex; align-items:center; gap:8px; margin:16px 0; flex-wrap:wrap; }
+  .fstep { background:rgba(255,107,107,0.15); border:1px solid rgba(255,107,107,0.3); border-radius:8px; padding:6px 12px; font-size:12px; color:rgba(255,255,255,0.8); }
+  .farr { color:rgba(255,255,255,0.3); font-size:14px; }
+  .total { margin-top:12px; font-size:13px; color:#FF6B6B; font-weight:700; }
+
+  /* SLIDE 5 - System Flow */
+  .s5 { background:linear-gradient(135deg,#0f0f1a,#0a0f1a); }
+  .flow-wrap { display:flex; align-items:stretch; gap:0; margin-top:12px; }
+  .flow-col { flex:1; border-radius:16px; padding:26px 20px; display:flex; flex-direction:column; gap:10px; }
+  .flow-col.fc1 { background:rgba(108,99,255,0.1); border:1px solid rgba(108,99,255,0.3); }
+  .flow-col.fc2 { background:rgba(255,200,0,0.06); border:1px solid rgba(255,200,0,0.25); margin:0 14px; }
+  .flow-col.fc3 { background:rgba(0,212,170,0.07); border:1px solid rgba(0,212,170,0.3); }
+  .flow-col .col-icon { font-size:30px; margin-bottom:4px; }
+  .flow-col .col-title { font-size:18px; font-weight:800; margin-bottom:4px; }
+  .flow-col .col-sub { font-size:12px; color:rgba(255,255,255,0.4); margin-bottom:10px; }
+  .flow-item { background:rgba(255,255,255,0.05); border-radius:10px; padding:10px 14px; font-size:13px; color:rgba(255,255,255,0.8); line-height:1.5; }
+  .flow-item strong { display:block; font-size:13px; color:#fff; margin-bottom:2px; }
+  .flow-note { margin-top:18px; background:rgba(255,255,255,0.04); border-left:3px solid #6C63FF; border-radius:0 10px 10px 0; padding:14px 18px; font-size:14px; color:rgba(255,255,255,0.65); line-height:1.6; }
+
+  /* SLIDE 6 - Pipeline Detail */
+  .s6 { background:linear-gradient(135deg,#0f0f1a,#0a0a1a); }
+  .req-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:8px; }
+  .req-item { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:20px; display:flex; gap:14px; }
+  .req-item .ico { font-size:26px; flex-shrink:0; }
+  .req-item h4 { font-size:15px; font-weight:700; margin-bottom:6px; }
+  .req-item p { font-size:13px; color:rgba(255,255,255,0.5); line-height:1.5; }
+  .reality-box { margin-top:20px; background:rgba(255,200,0,0.06); border:1px solid rgba(255,200,0,0.2); border-radius:12px; padding:16px 24px; font-size:14px; color:rgba(255,255,255,0.7); line-height:1.6; }
+  .reality-box strong { color:#ffd060; }
+
+  /* SLIDE 7 - Backend Detail */
+  .s7 { background:linear-gradient(135deg,#0f0f1a,#0a0f0a); }
+
+  /* SLIDE 8 - Frontend Detail */
+  .s8 { background:linear-gradient(135deg,#0f0f1a,#0f0a1a); }
+
+  /* SLIDE 9 - Timeline */
+  .s9 { background:linear-gradient(135deg,#0f0f1a,#1a1a0f); }
+  .tl { display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; margin-top:8px; }
+  .mc { border-radius:16px; padding:26px 22px; }
+  .mc.m1 { background:rgba(108,99,255,0.1); border:1px solid rgba(108,99,255,0.3); }
+  .mc.m2 { background:rgba(0,212,170,0.07); border:1px solid rgba(0,212,170,0.3); }
+  .mc.m3 { background:rgba(255,107,107,0.07); border:1px solid rgba(255,107,107,0.3); }
+  .mc .mlbl { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px; }
+  .m1 .mlbl { color:#6C63FF; } .m2 .mlbl { color:#00D4AA; } .m3 .mlbl { color:#FF6B6B; }
+  .mc .mttl { font-size:22px; font-weight:800; margin-bottom:16px; }
+  .wi { padding:9px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:14px; color:rgba(255,255,255,0.7); }
+  .wi:last-child { border-bottom:none; }
+  .wn { font-size:11px; color:rgba(255,255,255,0.35); text-transform:uppercase; margin-bottom:3px; }
+  .tl-note { margin-top:20px; background:rgba(255,200,0,0.06); border:1px solid rgba(255,200,0,0.2); border-radius:10px; padding:14px 20px; font-size:14px; color:rgba(255,255,255,0.7); }
+  .tl-note strong { color:#ffd060; }
+
+  /* SLIDE 10 - Why Me */
+  .s10 { background:linear-gradient(135deg,#0f0f1a,#1a0f1a); }
+  .sk-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:8px; }
+  .sk { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:22px; display:flex; gap:14px; }
+  .sk .ico { font-size:28px; flex-shrink:0; }
+  .sk h4 { font-size:15px; font-weight:700; margin-bottom:5px; }
+  .sk p { font-size:13px; color:rgba(255,255,255,0.5); line-height:1.5; }
+  .sk .src { font-size:12px; color:#6C63FF; margin-top:7px; font-weight:600; }
+</style>
+</head>
+<body>
+
+<!-- SLIDE 1: Title -->
+<div class="slide s1 active" id="slide-1">
+  <div class="blob b1"></div><div class="blob b2"></div>
+  <div class="inner">
+    <div class="logo">Power<span class="accent">Donor</span>.ai</div>
+    <div class="tagline">Technical Approach & Build Plan</div>
+    <div class="bar"></div>
+    <div style="font-size:20px;color:rgba(255,255,255,0.75);margin-bottom:6px;">Sai Pranavi Jeedigunta</div>
+    <div style="font-size:15px;color:rgba(255,255,255,0.4);">AI & Backend Engineer · Northeastern University MS</div>
+  </div>
+</div>
+
+<!-- SLIDE 2: The Data Problem -->
+<div class="slide s2" id="slide-2">
+  <div class="inner">
+    <div class="tag red">The Most Critical Problem</div>
+    <div class="title">There Is No System Without the Data</div>
+    <div class="sub">This is what a real record from your database looks like today</div>
+    <div class="data-grid">
+      <div class="dbox bad">
+        <h3 class="red">❌ What exists now — a real 990 record</h3>
+        <div class="df"><div class="lbl">Name</div><div class="val">Please Just Slow Down (PLEA)</div></div>
+        <div class="df"><div class="lbl">EIN</div><div class="val">921704368 · Rockwall, TX</div></div>
+        <div class="df"><div class="lbl">Revenue</div><div class="val empty">$0 — all zeros</div></div>
+        <div class="df"><div class="lbl">Mission</div><div class="val empty">— empty —</div></div>
+        <div class="df"><div class="lbl">Programs</div><div class="val empty">— empty —</div></div>
+        <div class="df"><div class="lbl">Who they help</div><div class="val empty">— empty —</div></div>
+        <div class="df"><div class="lbl">Impact</div><div class="val empty">— empty —</div></div>
+      </div>
+      <div class="darr">→</div>
+      <div class="dbox good">
+        <h3 class="green">✓ What it needs to be</h3>
+        <div class="df"><div class="lbl">Mission</div><div class="val full">Clear description of what the org does</div></div>
+        <div class="df"><div class="lbl">Programs</div><div class="val full">Specific initiatives and services</div></div>
+        <div class="df"><div class="lbl">Who they help</div><div class="val full">Children / veterans / homeless / etc.</div></div>
+        <div class="df"><div class="lbl">Geography</div><div class="val full">Local / national / global + city</div></div>
+        <div class="df"><div class="lbl">Impact</div><div class="val full">Results, numbers, outcomes</div></div>
+        <div class="df"><div class="lbl">Approach</div><div class="val full">Direct service / systems change</div></div>
+      </div>
+    </div>
+    <div class="warning-box">
+      <div class="wi">⚠️</div>
+      <p>For a recommendation system <strong>the data is the product.</strong> You cannot match a donor against empty records. Before building anything else — the interview, the matching, the UI — this data problem must be solved first.</p>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 3: Why Data is Everything -->
+<div class="slide s3" id="slide-3">
+  <div class="inner">
+    <div class="tag red">Why This Matters</div>
+    <div class="title">The Matching Is Only As Good As the Data</div>
+    <div class="big-statement">A recommendation system with no descriptions<br/>is <span>not a recommendation system.</span></div>
+    <div class="three-facts">
+      <div class="fact f1">
+        <div class="num">400k</div>
+        <h4>Charities in the database</h4>
+        <p>Most have a name, a tax ID, and a state. That's it. There's nothing to match against.</p>
+      </div>
+      <div class="fact f2">
+        <div class="num">~0%</div>
+        <h4>Usable for matching right now</h4>
+        <p>Without mission statements, programs, and impact data — the matching engine has nothing meaningful to work with.</p>
+      </div>
+      <div class="fact f3">
+        <div class="num">100k+</div>
+        <h4>Well-enriched profiles needed</h4>
+        <p>Realistically achievable. More than enough to return excellent, trusted recommendations to donors.</p>
+      </div>
+    </div>
+    <div class="bottom-note">
+      <strong style="color:#fff;">The enrichment pipeline is not a feature — it is the foundation.</strong> Every other part of the system depends on it. This is where the build starts.
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 4: Latency Problem & Solution -->
+<div class="slide s4" id="slide-4">
+  <div class="inner">
+    <div class="tag yellow">Performance Problem</div>
+    <div class="title">The Latency Issues — and How We Fix Them</div>
+    <div class="sub">Two things currently causing lag in the donor experience</div>
+    <div class="latency-grid">
+      <div class="lat-problem">
+        <h3>❌ The Problems</h3>
+        <div class="lat-item">
+          <strong>Voice Interface — 4 to 7 seconds per question</strong>
+          Every question requires: speech to text → LLM processing → text to speech. For a 10 question interview that's up to a minute of just waiting. First impressions matter.
+          <div class="flow-steps">
+            <div class="fstep">Donor speaks</div>
+            <div class="farr">→</div>
+            <div class="fstep">Speech to text (~2s)</div>
+            <div class="farr">→</div>
+            <div class="fstep">LLM (~3s)</div>
+            <div class="farr">→</div>
+            <div class="fstep">Audio back (~2s)</div>
+          </div>
+          <div class="total">Total per question: 4–7 seconds</div>
+        </div>
+        <div class="lat-item">
+          <strong>Dynamic Questions — LLM called live between every step</strong>
+          Generating the next question in real time after every answer adds 2 to 4 seconds of lag between each step. Donors feel the wait.
+        </div>
+      </div>
+      <div class="lat-solution">
+        <h3>✓ The Solutions</h3>
+        <div class="lat-item">
+          <strong>Voice → Text Interview First (MVP)</strong>
+          Build the interview as a smart form for MVP — zero lag, smooth experience. Voice gets layered on top in Phase 2 once the core product is proven. The underlying logic is identical — just a different input method.
+        </div>
+        <div class="lat-item">
+          <strong>Dynamic Questions → Pre-Generated Paths (MVP)</strong>
+          Define smart question paths upfront based on cause category. Feels dynamic, zero LLM calls between questions, instant response. Phase 2 adds true streaming adaptability.
+        </div>
+        <div class="lat-item">
+          <strong>Result</strong>
+          Donor completes the interview in under 2 minutes with no waiting. Clean, fast, professional first impression.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 5: System Flow -->
+<div class="slide s5" id="slide-5">
+  <div class="inner">
+    <div class="tag accent">System Overview</div>
+    <div class="title">How the Three Parts Connect</div>
+    <div class="sub">Pipeline feeds the backend. Backend powers the frontend.</div>
+    <div class="flow-wrap">
+      <div class="flow-col fc1">
+        <div class="col-icon">🔄</div>
+        <div class="col-title" style="color:#a09aff;">Pipeline</div>
+        <div class="col-sub">Runs automatically in the background</div>
+        <div class="flow-item"><strong>Clean IRS Data</strong>Remove inactive charities, decode categories</div>
+        <div class="flow-item"><strong>Find & Scrape Websites</strong>Read mission, programs, impact pages</div>
+        <div class="flow-item"><strong>AI Extraction</strong>Pull structured fields from scraped content</div>
+        <div class="flow-item"><strong>Embed & Store</strong>Make each charity searchable by meaning</div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:center;padding:0 4px;">
+        <div style="text-align:center;"><div style="font-size:26px;color:rgba(255,255,255,0.2);">→</div><div style="font-size:11px;color:rgba(255,255,255,0.2);margin-top:4px;">feeds</div></div>
+      </div>
+      <div class="flow-col fc2">
+        <div class="col-icon">⚙️</div>
+        <div class="col-title" style="color:#ffd060;">Backend</div>
+        <div class="col-sub">The invisible engine</div>
+        <div class="flow-item"><strong>Interview Service</strong>Extracts what the donor actually cares about</div>
+        <div class="flow-item"><strong>Matching Engine</strong>Finds top 10 charities by meaning not keywords</div>
+        <div class="flow-item"><strong>Report Generator</strong>Explains why each charity matches this donor</div>
+        <div class="flow-item"><strong>Charity API</strong>Serves full charity details to the frontend</div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:center;padding:0 4px;">
+        <div style="text-align:center;"><div style="font-size:26px;color:rgba(255,255,255,0.2);">→</div><div style="font-size:11px;color:rgba(255,255,255,0.2);margin-top:4px;">powers</div></div>
+      </div>
+      <div class="flow-col fc3">
+        <div class="col-icon">🖥️</div>
+        <div class="col-title" style="color:#00D4AA;">Frontend</div>
+        <div class="col-sub">What the donor sees</div>
+        <div class="flow-item"><strong>Interview Form</strong>Multi-step, fast, no lag</div>
+        <div class="flow-item"><strong>Results Page</strong>Top 10 matched charities ranked by fit</div>
+        <div class="flow-item"><strong>Charity Report Cards</strong>Personalized explanation per charity</div>
+        <div class="flow-item"><strong>Donation Info</strong>EIN displayed to instruct DAF provider</div>
+      </div>
+    </div>
+    <div class="flow-note"><strong style="color:#fff;">Why build in this order:</strong> The frontend is only as good as the engine underneath. Get the data and matching right first — then build what donors see on top of it.</div>
+  </div>
+</div>
+
+<!-- SLIDE 6: Pipeline Requirements -->
+<div class="slide s6" id="slide-6">
+  <div class="inner">
+    <div class="tag" style="color:#a09aff;">Pipeline</div>
+    <div class="title">What the Pipeline Requires</div>
+    <div class="sub">The automated system that transforms raw IRS data into matchable charity profiles</div>
+    <div class="req-grid">
+      <div class="req-item">
+        <div class="ico">🧹</div>
+        <div>
+          <h4>Data Cleaning</h4>
+          <p>Remove inactive charities with zero revenue. Decode NTEE category codes into plain language. Standardize city, state, and location fields across 400,000 records.</p>
+        </div>
+      </div>
+      <div class="req-item">
+        <div class="ico">🌐</div>
+        <div>
+          <h4>Website Discovery & Scraping</h4>
+          <p>Find each charity's website. Scrape their About, Programs, and Impact pages. Handle failures gracefully — some sites block scrapers, some have no content, some have no website at all.</p>
+        </div>
+      </div>
+      <div class="req-item">
+        <div class="ico">🤖</div>
+        <div>
+          <h4>AI Structured Extraction</h4>
+          <p>Send scraped content to an LLM. Extract mission, programs, population served, geography, impact metrics, and philosophical approach as clean structured data.</p>
+        </div>
+      </div>
+      <div class="req-item">
+        <div class="ico">📦</div>
+        <div>
+          <h4>Embedding & Vector Storage</h4>
+          <p>Convert each enriched charity profile into a numerical vector that captures its meaning. Store in Pinecone so donors can be matched by what they care about — not just keywords.</p>
+        </div>
+      </div>
+      <div class="req-item">
+        <div class="ico">⏰</div>
+        <div>
+          <h4>Scheduled Automation</h4>
+          <p>The pipeline runs on a weekly schedule using Airflow. Charities update, new ones appear, old ones go inactive. The database stays fresh automatically without manual work.</p>
+        </div>
+      </div>
+      <div class="req-item">
+        <div class="ico">🎯</div>
+        <div>
+          <h4>Tiered Enrichment Strategy</h4>
+          <p>Start with the top 50,000 most active charities. Enrich the rest over time. Realistically 100,000–150,000 well-enriched profiles — more than enough for excellent matching.</p>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:20px;background:rgba(108,99,255,0.08);border:1px solid rgba(108,99,255,0.25);border-radius:12px;padding:18px 24px;">
+      <div style="font-size:13px;font-weight:700;color:#a09aff;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;">Fields We Extract for Good Matching</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+        <div style="font-size:13px;color:rgba(255,255,255,0.75);background:rgba(255,255,255,0.04);border-radius:8px;padding:10px 14px;line-height:1.6;">
+          <strong style="color:#fff;display:block;margin-bottom:4px;">Mission Statement</strong>What the org exists to do — the core purpose in their own words
+        </div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.75);background:rgba(255,255,255,0.04);border-radius:8px;padding:10px 14px;line-height:1.6;">
+          <strong style="color:#fff;display:block;margin-bottom:4px;">Programs & Services</strong>Specific initiatives — tutoring, food banks, job training, housing etc.
+        </div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.75);background:rgba(255,255,255,0.04);border-radius:8px;padding:10px 14px;line-height:1.6;">
+          <strong style="color:#fff;display:block;margin-bottom:4px;">Population Served</strong>Who they help — children, veterans, homeless, refugees, elderly etc.
+        </div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.75);background:rgba(255,255,255,0.04);border-radius:8px;padding:10px 14px;line-height:1.6;">
+          <strong style="color:#fff;display:block;margin-bottom:4px;">Geographic Scope</strong>Local neighborhood, city, state, national, or global reach
+        </div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.75);background:rgba(255,255,255,0.04);border-radius:8px;padding:10px 14px;line-height:1.6;">
+          <strong style="color:#fff;display:block;margin-bottom:4px;">Impact Metrics</strong>Numbers that show results — people served, outcomes achieved, success rates
+        </div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.75);background:rgba(255,255,255,0.04);border-radius:8px;padding:10px 14px;line-height:1.6;">
+          <strong style="color:#fff;display:block;margin-bottom:4px;">Approach & Philosophy</strong>Direct service vs systems change, grassroots vs data-driven, local vs scalable
+        </div>
+      </div>
+      <div style="margin-top:12px;font-size:13px;color:rgba(255,255,255,0.4);">These six fields combined into one rich paragraph per charity — that's what gets vectorized and matched against donor interests.</div>
+    </div>
+    <div class="reality-box" style="margin-top:12px;"><strong>Realistic expectation:</strong> Not every charity will be perfectly enriched — some have no website, some block scrapers. That's fine. We don't need all 400,000. We need enough high-quality profiles to return matches donors trust.</div>
+  </div>
+</div>
+
+<!-- SLIDE 7: Backend Requirements -->
+<div class="slide s7" id="slide-7">
+  <div class="inner">
+    <div class="tag yellow">Backend</div>
+    <div class="title">What the Backend Requires</div>
+    <div class="sub">The invisible engine that powers every interaction — donors never see this, but everything depends on it</div>
+    <div class="req-grid">
+      <div class="req-item">
+        <div class="ico">🎤</div>
+        <div>
+          <h4>Interview Service</h4>
+          <p>Takes the donor's form answers and uses an LLM to extract a structured profile — causes, geography, donation size, values, and exclusions. This profile feeds directly into matching.</p>
+        </div>
+      </div>
+      <div class="req-item">
+        <div class="ico">🧠</div>
+        <div>
+          <h4>Matching Engine</h4>
+          <p>Embeds the donor profile and queries Pinecone with filters — active charities, right geography, right cause. Returns the top 10 charity IDs ranked by how closely they match the donor.</p>
+        </div>
+      </div>
+      <div class="req-item">
+        <div class="ico">📝</div>
+        <div>
+          <h4>Report Generation Service</h4>
+          <p>For each matched charity, generates a personalized explanation — why this charity fits this specific donor, what they do, their impact, and their EIN. Cached so it's never generated twice.</p>
+        </div>
+      </div>
+      <div class="req-item">
+        <div class="ico">🗄️</div>
+        <div>
+          <h4>Charity Database API</h4>
+          <p>Clean endpoints to fetch full charity details from PostgreSQL. Handles filtering by active status, geography, and size. Serves data to both matching and the frontend.</p>
+        </div>
+      </div>
+      <div class="req-item">
+        <div class="ico">🔐</div>
+        <div>
+          <h4>Security & Session Management</h4>
+          <p>API key authentication on all endpoints. Donor session storage so interview answers and match results persist through the experience without requiring user accounts in MVP.</p>
+        </div>
+      </div>
+      <div class="req-item">
+        <div class="ico">⚡</div>
+        <div>
+          <h4>Performance & Caching</h4>
+          <p>Cache generated reports — same charity never processed twice. Cache embeddings. Target under 3 seconds from interview submission to showing matched results to the donor.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 8: Frontend Requirements -->
+<div class="slide s8" id="slide-8">
+  <div class="inner">
+    <div class="tag green">Frontend</div>
+    <div class="title">What the Frontend Requires</div>
+    <div class="sub">What the donor actually sees — built last, on top of a solid backend</div>
+    <div class="req-grid">
+      <div class="req-item">
+        <div class="ico">📋</div>
+        <div>
+          <h4>Multi-Step Interview Form</h4>
+          <p>Clean, fast, zero lag. Pre-generated smart question paths that feel dynamic without calling an LLM live. Covers causes, geography, donation size, values, and exclusions.</p>
+        </div>
+      </div>
+      <div class="req-item">
+        <div class="ico">✨</div>
+        <div>
+          <h4>Results Page</h4>
+          <p>Displays top 10 matched charities ranked by relevance. Clean cards showing charity name, cause, location, and match score. Fast load — results come from cached backend responses.</p>
+        </div>
+      </div>
+      <div class="req-item">
+        <div class="ico">📄</div>
+        <div>
+          <h4>Charity Report Cards</h4>
+          <p>Each charity gets a personalized explanation — why it matches this donor, what they do, who they serve, their impact highlights, and their EIN for DAF donation instructions.</p>
+        </div>
+      </div>
+      <div class="req-item">
+        <div class="ico">💳</div>
+        <div>
+          <h4>Donation Info Display</h4>
+          <p>EIN prominently displayed with clear instructions — "Share this with your DAF provider to send your donation." Simple, no payment processing needed in MVP.</p>
+        </div>
+      </div>
+      <div class="req-item">
+        <div class="ico">📱</div>
+        <div>
+          <h4>Responsive Design</h4>
+          <p>Works on desktop and mobile. Wealthy donors use both. Clean, professional appearance that builds trust — this is handling philanthropic decisions, it needs to feel premium.</p>
+        </div>
+      </div>
+      <div class="req-item">
+        <div class="ico">🔜</div>
+        <div>
+          <h4>Phase 2 — Voice & Accounts</h4>
+          <p>Voice interview, donor accounts, donation tracking, and dashboards come in Phase 2. The text interview and backend logic is identical — voice is just a different input layer on top.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 9: Timeline -->
+<div class="slide s9" id="slide-9">
+  <div class="inner">
+    <div class="tag accent">Timeline</div>
+    <div class="title">3 Months to a Working Product</div>
+    <div class="sub">Subject to a database review first — timeline confirmed after seeing what's there</div>
+    <div class="tl">
+      <div class="mc m1">
+        <div class="mlbl">Month 1</div>
+        <div class="mttl">Data Foundation</div>
+        <div class="wi"><div class="wn">Week 1</div>Audit existing database & codebase</div>
+        <div class="wi"><div class="wn">Weeks 2–3</div>Build enrichment pipeline — clean, scrape, AI extract</div>
+        <div class="wi"><div class="wn">Week 4</div>Test on 500 charities — show real results before spending</div>
+        <div class="wi"><div class="wn">Week 5</div>Scale to full dataset — all charities embedded & searchable</div>
+      </div>
+      <div class="mc m2">
+        <div class="mlbl">Month 2</div>
+        <div class="mttl">Backend Engine</div>
+        <div class="wi"><div class="wn">Weeks 6–7</div>Interview service + matching engine</div>
+        <div class="wi"><div class="wn">Week 8</div>Report generation + full backend working end to end</div>
+        <div class="wi"><div class="wn">End of Month 2</div>Complete backend testable via API — no UI needed yet</div>
+      </div>
+      <div class="mc m3">
+        <div class="mlbl">Month 3</div>
+        <div class="mttl">Interface & Launch</div>
+        <div class="wi"><div class="wn">Weeks 9–10</div>Donor-facing UI — interview form, results, report cards</div>
+        <div class="wi"><div class="wn">Weeks 11–12</div>Testing, deployment, performance tuning</div>
+        <div class="wi"><div class="wn">End of Month 3</div>Live product ready for real donors</div>
+      </div>
+    </div>
+    <div class="tl-note"><strong>Important:</strong> This timeline assumes a database review this week. If enrichment is further along than expected, we move faster. If it's raw 990 data, 3 months is the right number. Either way — no guessing.</div>
+  </div>
+</div>
+
+<!-- SLIDE 10: Recommendation Layer -->
+<div class="slide s10" id="slide-10">
+  <div class="inner">
+    <div class="tag accent">Recommendation System</div>
+    <div class="title">How the Matching Actually Works</div>
+    <div class="sub">Three layers working together — not just a simple search</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-top:8px;">
+
+      <div style="background:rgba(108,99,255,0.1);border:1px solid rgba(108,99,255,0.3);border-radius:16px;padding:26px 22px;">
+        <div style="font-size:28px;margin-bottom:10px;">🔍</div>
+        <h3 style="font-size:17px;font-weight:800;color:#a09aff;margin-bottom:8px;">Layer 1 — Semantic Search</h3>
+        <p style="font-size:13px;color:rgba(255,255,255,0.55);margin-bottom:16px;">The core of matching. Finds charities by meaning not keywords.</p>
+        <div class="flow-item" style="margin-bottom:8px;"><strong>Donor profile → text → vector</strong>Convert what donor cares about into a 1536-number embedding</div>
+        <div class="flow-item" style="margin-bottom:8px;"><strong>Charity profiles → text → vectors</strong>Only domain fields — mission, programs, population, impact</div>
+        <div class="flow-item"><strong>Find closest vectors</strong>Pinecone returns charities whose meaning is closest to the donor's interests</div>
+      </div>
+
+      <div style="background:rgba(255,200,0,0.06);border:1px solid rgba(255,200,0,0.25);border-radius:16px;padding:26px 22px;">
+        <div style="font-size:28px;margin-bottom:10px;">🎯</div>
+        <h3 style="font-size:17px;font-weight:800;color:#ffd060;margin-bottom:8px;">Layer 2 — Metadata Filtering</h3>
+        <p style="font-size:13px;color:rgba(255,255,255,0.55);margin-bottom:16px;">Hard filters applied before semantic search runs.</p>
+        <div class="flow-item" style="margin-bottom:8px;"><strong>is_active = true</strong>Only return charities that are currently operating</div>
+        <div class="flow-item" style="margin-bottom:8px;"><strong>state = MA</strong>Match donor's geography preference</div>
+        <div class="flow-item" style="margin-bottom:8px;"><strong>cause = education</strong>Match donor's cause categories</div>
+        <div class="flow-item"><strong>gross_receipts ≥ $50k</strong>Filter out micro or inactive organizations</div>
+      </div>
+
+      <div style="background:rgba(0,212,170,0.07);border:1px solid rgba(0,212,170,0.3);border-radius:16px;padding:26px 22px;">
+        <div style="font-size:28px;margin-bottom:10px;">⚖️</div>
+        <h3 style="font-size:17px;font-weight:800;color:#00D4AA;margin-bottom:8px;">Layer 3 — Re-Ranking</h3>
+        <p style="font-size:13px;color:rgba(255,255,255,0.55);margin-bottom:16px;">Second pass to rank results by what matters most.</p>
+        <div class="flow-item" style="margin-bottom:8px;"><strong>Semantic score — 50%</strong>How closely the meaning matches</div>
+        <div class="flow-item" style="margin-bottom:8px;"><strong>Cause match — 20%</strong>Does the category align exactly</div>
+        <div class="flow-item" style="margin-bottom:8px;"><strong>Geography match — 15%</strong>Local vs national vs global</div>
+        <div class="flow-item"><strong>Size & enrichment — 15%</strong>Stable org with quality data scores higher</div>
+      </div>
+
+    </div>
+
+    <div style="margin-top:20px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+      <div style="background:rgba(255,255,255,0.04);border-left:3px solid #6C63FF;border-radius:0 10px 10px 0;padding:14px 18px;font-size:14px;color:rgba(255,255,255,0.65);line-height:1.6;">
+        <strong style="color:#fff;">What gets vectorized:</strong> Only fields that describe the charity's domain — mission, programs, population served, impact, approach. Not EINs, revenue figures, or dates.
+      </div>
+      <div style="background:rgba(255,255,255,0.04);border-left:3px solid #00D4AA;border-radius:0 10px 10px 0;padding:14px 18px;font-size:14px;color:rgba(255,255,255,0.65);line-height:1.6;">
+        <strong style="color:#fff;">Fallback strategy:</strong> If fewer than 10 results — broaden geography, then broaden cause category, then fall back to pure metadata match. Donor always gets recommendations.
+      </div>
+      <div style="background:rgba(255,200,0,0.06);border-left:3px solid #ffd060;border-radius:0 10px 10px 0;padding:14px 18px;font-size:14px;color:rgba(255,255,255,0.65);line-height:1.6;">
+        <strong style="color:#ffd060;">If donor is unsure:</strong> Skip semantic search. Return top charities ranked by impact score — Charity Navigator rating, program expense ratio, reach, and data quality. Shown as "Top Impact Charities" not "Your Matches."
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 11: Costs -->
+<div class="slide" id="slide-11">
+  <div class="inner">
+    <div class="tag green">Infrastructure</div>
+    <div class="title">Estimated Costs</div>
+    <div class="sub">Cost-efficient by design — validate before spending anything significant</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:8px;">
+
+      <div>
+        <h3 style="font-size:18px;color:#00D4AA;margin-bottom:18px;">How We Keep Costs Down</h3>
+        <div class="req-item" style="margin-bottom:12px;">
+          <div class="ico">🧪</div>
+          <div>
+            <h4>Prove Before Spend</h4>
+            <p>Run the pipeline on 500 charities first. Show real match results. Only scale up after it's validated.</p>
+          </div>
+        </div>
+        <div class="req-item" style="margin-bottom:12px;">
+          <div class="ico">🎯</div>
+          <div>
+            <h4>Right Model for the Right Job</h4>
+            <p>Use cheaper AI models for behind-the-scenes tasks. Reserve the best model only for what donors actually read.</p>
+          </div>
+        </div>
+        <div class="req-item" style="margin-bottom:12px;">
+          <div class="ico">📦</div>
+          <div>
+            <h4>Cache Everything</h4>
+            <p>Once a charity is enriched or a report is generated, we never pay to do it again unless something changes.</p>
+          </div>
+        </div>
+        <div class="req-item">
+          <div class="ico">🔢</div>
+          <div>
+            <h4>Enrich in Tiers</h4>
+            <p>Start with top 50,000 most active charities. Enrich the rest only when the matching system needs them.</p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3 style="font-size:18px;color:#6C63FF;margin-bottom:18px;">Cost Breakdown</h3>
+        <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:24px;">
+          <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.4);margin-bottom:14px;">One-Time Setup</div>
+          <div class="cr" style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.06);font-size:14px;">
+            <span style="color:rgba(255,255,255,0.65);">AI enrichment — full dataset run</span>
+            <span style="font-weight:700;color:#00D4AA;">~$200–300</span>
+          </div>
+          <div class="cr" style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.06);font-size:14px;">
+            <span style="color:rgba(255,255,255,0.65);">Website discovery API</span>
+            <span style="font-weight:700;color:#00D4AA;">~$50–100</span>
+          </div>
+
+          <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.4);margin:18px 0 14px;">Monthly Ongoing</div>
+          <div class="cr" style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.06);font-size:14px;">
+            <span style="color:rgba(255,255,255,0.65);">Pinecone — vector search</span>
+            <span style="font-weight:700;color:#6C63FF;">~$70 / mo</span>
+          </div>
+          <div class="cr" style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.06);font-size:14px;">
+            <span style="color:rgba(255,255,255,0.65);">Server hosting</span>
+            <span style="font-weight:700;color:#6C63FF;">~$20–30 / mo</span>
+          </div>
+          <div class="cr" style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.06);font-size:14px;">
+            <span style="color:rgba(255,255,255,0.65);">AI matching & report generation</span>
+            <span style="font-weight:700;color:#6C63FF;">~$20–30 / mo</span>
+          </div>
+          <div class="cr" style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.06);font-size:14px;">
+            <span style="color:rgba(255,255,255,0.65);">PostgreSQL — Railway (existing)</span>
+            <span style="font-weight:700;color:#00D4AA;">Already paying</span>
+          </div>
+
+          <div style="margin-top:16px;background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.3);border-radius:10px;padding:13px 16px;display:flex;justify-content:space-between;font-weight:700;font-size:15px;">
+            <span>Monthly ongoing after launch</span>
+            <span style="color:#00D4AA;">~$110–130 / mo</span>
+          </div>
+          <div style="margin-top:10px;font-size:12px;color:rgba(255,255,255,0.3);text-align:center;">No significant spend before the 500 charity prototype proves it works</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="nav">
+  <button onclick="prev()">← Prev</button>
+  <span id="ctr">1 / 11</span>
+  <button onclick="next()">Next →</button>
+</div>
+
+<script>
+  let cur=1, total=11;
+  const order = [1,2,3,5,6,7,8,9,10,4,11];
+  function show(n) {
+    document.getElementById(`slide-${order[cur-1]}`).classList.remove('active');
+    cur=Math.max(1,Math.min(total,n));
+    document.getElementById(`slide-${order[cur-1]}`).classList.add('active');
+    document.getElementById('ctr').textContent=`${cur} / ${total}`;
+  }
+  function next(){show(cur+1);}
+  function prev(){show(cur-1);}
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key==='ArrowDown')next();
+    if(e.key==='ArrowLeft'||e.key==='ArrowUp')prev();
+  });
+</script>
+</body>
+</html>
